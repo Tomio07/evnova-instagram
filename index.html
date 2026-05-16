@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<script>
+  const username = 'evnova_custom';
+  const ua = navigator.userAgent;
+
+  if (/android/i.test(ua)) {
+    // Android → Intentでアプリ起動
+    location.href = 'intent://instagram.com/_u/' + username +
+      '/#Intent;package=com.instagram.android;scheme=https;end';
+  } else {
+    // iPhone → URIスキームでアプリ起動、失敗したらブラウザへ
+    location.href = 'instagram://user?username=' + username;
+    setTimeout(() => {
+      location.href = 'https://www.instagram.com/' + username + '/';
+    }, 1500);
+  }
+</script>
+<p>リダイレクト中...</p>
+</body>
+</html>
