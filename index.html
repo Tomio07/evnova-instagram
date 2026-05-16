@@ -1,23 +1,106 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opening Instagram...</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 24px;
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo svg { width: 38px; height: 38px; fill: #fff; }
+    p { font-size: 15px; opacity: 0.6; }
+    a#open-btn {
+      display: none;
+      margin-top: 8px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg,#f09433,#dc2743,#bc1888);
+      color: #fff;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+  </style>
+</head>
 <body>
-<script>
-  const username = 'evnova_custom';
-  const ua = navigator.userAgent;
+  <div class="logo">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.975.975 1.246 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.308 3.608-.975.975-2.242 1.246-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.308-.975-.975-1.246-2.242-1.308-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.516 2.497 5.783 2.225 7.15 2.163 8.416 2.105 8.796 2.163 12 2.163zm0-2.163c-3.259 0-3.667.014-4.947.072-1.618.074-3.232.49-4.438 1.696C1.41 2.974.994 4.588.92 6.206.862 7.486.848 7.894.848 12s.014 4.514.072 5.794c.074 1.618.49 3.232 1.696 4.438 1.206 1.206 2.82 1.622 4.438 1.696C8.333 23.986 8.741 24 12 24s3.667-.014 4.947-.072c1.618-.074 3.232-.49 4.438-1.696 1.206-1.206 1.622-2.82 1.696-4.438.058-1.28.072-1.688.072-5.794s-.014-4.514-.072-5.794c-.074-1.618-.49-3.232-1.696-4.438C20.18.562 18.566.146 16.948.072 15.667.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+    </svg>
+  </div>
+  <p id="msg">Instagramを起動しています...</p>
+  <a id="open-btn" href="#">アプリで開く</a>
 
-  if (/android/i.test(ua)) {
-    // Android → Intentでアプリ起動
-    location.href = 'intent://instagram.com/_u/' + username +
-      '/#Intent;package=com.instagram.android;scheme=https;end';
-  } else {
-    // iPhone → URIスキームでアプリ起動、失敗したらブラウザへ
-    location.href = 'instagram://user?username=' + username;
-    setTimeout(() => {
-      location.href = 'https://www.instagram.com/' + username + '/';
-    }, 1500);
-  }
-</script>
-<p>リダイレクト中...</p>
+  <script>
+    var USERNAME = 'evnova_custom';
+    var ua = navigator.userAgent;
+    var webURL = 'https://www.instagram.com/' + USERNAME + '/';
+    var appScheme = 'instagram://user?username=' + USERNAME;
+    var intentURL =
+      'intent://www.instagram.com/' + USERNAME + '/' +
+      '#Intent;' +
+      'action=android.intent.action.VIEW;' +
+      'category=android.intent.category.BROWSABLE;' +
+      'scheme=https;' +
+      'package=com.instagram.android;' +
+      'S.browser_fallback_url=' + encodeURIComponent(webURL) + ';' +
+      'end';
+
+    var btn = document.getElementById('open-btn');
+
+    if (/android/i.test(ua)) {
+      // Android: hidden iframe でアプリ起動を試み、失敗したらintentへ
+      btn.href = intentURL;
+      var iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = appScheme;
+      document.body.appendChild(iframe);
+      setTimeout(function () {
+        window.location.href = intentURL;
+      }, 600);
+      setTimeout(function () {
+        document.getElementById('msg').textContent = '自動で開かない場合はボタンをタップ';
+        btn.style.display = 'inline-block';
+      }, 2000);
+
+    } else if (/iphone|ipad|ipod/i.test(ua)) {
+      // iOS: URIスキームを即時試行 → Universal Linkへフォールバック
+      btn.href = appScheme;
+      var t = Date.now();
+      window.location.href = appScheme;
+      var timer = setTimeout(function () {
+        if (Date.now() - t < 2500) {
+          window.location.href = webURL;
+        }
+      }, 1500);
+      window.addEventListener('pagehide', function () { clearTimeout(timer); });
+      setTimeout(function () {
+        document.getElementById('msg').textContent = '自動で開かない場合はボタンをタップ';
+        btn.style.display = 'inline-block';
+      }, 2000);
+
+    } else {
+      window.location.href = webURL;
+    }
+  </script>
 </body>
 </html>
